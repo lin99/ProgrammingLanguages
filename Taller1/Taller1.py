@@ -29,10 +29,10 @@ re_single = re.compile('!|%|\'|=|-|,|/|<|\\)|;|:|\\*|\\+|\\(|>')
 re_id = re.compile("[a-zA-Z_][a-zA-Z0-9_]*")
 re_real = re.compile("[0-9]+\\.[0-9]+")
 re_entero = re.compile("[0-9]+")
-re_char = re.compile('\'.\'')
+re_char = re.compile('\'[a-zA-Z0-9_\\s]\'')
 #re_strings = re.compile("\".*?\"")
 #re_strings = re.compile("\"[a-zA-Z_][a-zA-Z0-9_]\\s*?\"")
-re_strings = re.compile("\"([a-zA-Z_][a-zA-Z0-9_]*\\s*)*?\"")
+re_strings = re.compile("\"(\\s*[a-zA-Z_][a-zA-Z0-9_]*\\s*)*?\"")
 re_space = re.compile("\\s")
 re_singlecomment = re.compile("//.*")
 re_multcomment_open = re.compile("/\\*.*")
@@ -48,9 +48,10 @@ fin_principal"""
 ejemplo = sys.stdin.read()
 pos = 0
 col = 1
-to_match_4 = [ (re_strings,"cadena"), (re_real,"real"), (re_entero,"entero"), (re_id,"id"), (re_char,"char") ]
+to_match_4 = [ (re_strings,"tk_cadena"), (re_real,"tk_real"), (re_entero,"tk_entero"), (re_id,"id") ]
 to_match_space = [ re_space ]
 to_match_3 = [ (re_reserved, RESERVED_WORDS), (re_double, DOUBLE_TOKENS), (re_single, SINGLE_TOKENS) ]
+to_match_char = [(re_char,"tk_caracter")]
 
 lineas = ejemplo.split("\n")
 row = 1
@@ -94,6 +95,15 @@ for ejemplo in lineas:
             made_match = True
             continue
         
+        for m in to_match_char:
+            aux = m[0].match(ejemplo[pos:])
+            if(aux):
+                pos += aux.end();
+                made_match = True;
+                print ("<%s,%s,%s,%s>"%(m[1],aux.group(),row,col))
+                col += aux.end()
+                break
+            
         for m in to_match_3:
             
             aux = m[0].match(ejemplo[pos:])
@@ -128,7 +138,7 @@ for ejemplo in lineas:
             continue
         
         if(not made_match ):
-            print ((">>>Error lexico (linea: %s, posicion: %s)")%(row,col))
+            print ((">>> Error lexico(linea: %s, posicion: %s)")%(row,col))
             fatal_error = True
             break
     row += 1
